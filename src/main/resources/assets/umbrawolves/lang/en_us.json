@@ -1,0 +1,32 @@
+{
+  "entity.umbrawolves.variant_wolf": "Wolf",
+  "item.umbrawolves.variant_wolf_spawn_egg": "Wolf Spawn Egg",
+
+  "entity.umbrawolves.wolf.pale": "Pale Wolf",
+  "entity.umbrawolves.wolf.woods": "Woods Wolf",
+  "entity.umbrawolves.wolf.ashen": "Ashen Wolf",
+  "entity.umbrawolves.wolf.black": "Black Wolf",
+  "entity.umbrawolves.wolf.chestnut": "Chestnut Wolf",
+  "entity.umbrawolves.wolf.rusty": "Rusty Wolf",
+  "entity.umbrawolves.wolf.spotted": "Spotted Wolf",
+  "entity.umbrawolves.wolf.striped": "Striped Wolf",
+
+  "entity.umbrawolves.wolf.twilight": "Twilight Wolf",
+  "entity.umbrawolves.wolf.aether": "Aether Hound",
+  "entity.umbrawolves.wolf.void": "Void Wolf",
+  "entity.umbrawolves.wolf.martian": "Martian Wolf",
+  "entity.umbrawolves.wolf.glacian": "Glacian Wolf",
+  "entity.umbrawolves.wolf.byg_forest": "Forest Wolf",
+  "entity.umbrawolves.wolf.byg_desert": "Desert Wolf",
+  "entity.umbrawolves.wolf.nether": "Nether Hound",
+
+  "item.umbrawolves.wolf_leather_armor": "Wolf Leather Armor",
+  "item.umbrawolves.wolf_gold_armor": "Wolf Gold Armor",
+  "item.umbrawolves.wolf_diamond_armor": "Wolf Diamond Armor",
+  "item.umbrawolves.wolf_sweater": "Wolf Sweater",
+  "item.umbrawolves.wolf_space_suit": "Wolf Space Suit",
+  "item.umbrawolves.wolf_space_helmet": "Wolf Space Helmet",
+  "item.umbrawolves.wolf_booties": "Wolf Booties",
+
+  "umbrawolves.config.title": "Umbra Wolves Configuration"
+}

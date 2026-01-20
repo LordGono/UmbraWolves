@@ -1,0 +1,58 @@
+Wolf Texture Requirements
+=========================
+
+Each wolf variant needs 3 textures (48 total for all 16 variants):
+- {variant}.png        - Wild/untamed wolf texture
+- {variant}_tame.png   - Tamed wolf texture
+- {variant}_angry.png  - Angry wolf texture
+
+Texture Dimensions: 64x32 pixels (same as vanilla wolf)
+
+VANILLA VARIANTS - COMPLETE (extracted from Minecraft 1.21.4):
+--------------------------------------------------------------
+[x] pale.png, pale_tame.png, pale_angry.png
+[x] woods.png, woods_tame.png, woods_angry.png
+[x] ashen.png, ashen_tame.png, ashen_angry.png
+[x] black.png, black_tame.png, black_angry.png
+[x] chestnut.png, chestnut_tame.png, chestnut_angry.png
+[x] rusty.png, rusty_tame.png, rusty_angry.png
+[x] spotted.png, spotted_tame.png, spotted_angry.png
+[x] striped.png, striped_tame.png, striped_angry.png
+
+CUSTOM MODDED VARIANTS (need to be created):
+--------------------------------------------
+[ ] twilight.png, twilight_tame.png, twilight_angry.png
+    - Purple/mystical tint, enchanted shimmer effect
+
+[ ] aether.png, aether_tame.png, aether_angry.png
+    - White/light blue, angelic, cloud-like fur
+
+[ ] void.png, void_tame.png, void_angry.png
+    - Black with sculk patterns, glowing cyan eyes
+
+[ ] martian.png, martian_tame.png, martian_angry.png
+    - Red/dusty rust coat
+
+[ ] glacian.png, glacian_tame.png, glacian_angry.png
+    - Icy blue, frost crystal accents
+
+[ ] byg_forest.png, byg_forest_tame.png, byg_forest_angry.png
+    - Deep green/brown, forest camouflage
+
+[ ] byg_desert.png, byg_desert_tame.png, byg_desert_angry.png
+    - Sandy tan/golden coat
+
+[ ] nether.png, nether_tame.png, nether_angry.png
+    - Charred black/red, ember eyes, fire-resistant look
+
+
+TEXTURE TEMPLATE:
+-----------------
+Use pale.png as a template. The UV map is:
+- Head: 0,0 to 14,14
+- Body: 18,14 to 44,32
+- Legs: various positions
+- Tail: 9,18 to 18,26
+- Ears: 16,14 to 20,17
+
+The collar is handled separately by the game (wolf_collar.png from vanilla).

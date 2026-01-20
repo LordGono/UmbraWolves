@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "byg:atacama_desert", "required": false },
+    { "id": "byg:windswept_desert", "required": false },
+    { "id": "byg:red_rock_valley", "required": false },
+    { "id": "byg:sierra_badlands", "required": false },
+    { "id": "byg:mojave_desert", "required": false },
+    { "id": "biomesoplenty:dryland", "required": false },
+    { "id": "biomesoplenty:lush_desert", "required": false },
+    { "id": "biomesoplenty:wasteland", "required": false }
+  ]
+}
