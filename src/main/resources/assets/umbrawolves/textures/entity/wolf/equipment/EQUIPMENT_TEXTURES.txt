@@ -6,6 +6,11 @@ Texture Dimensions: 64x32 pixels (same as wolf texture, rendered as overlay)
 
 The textures should only contain the equipment parts - the rest should be transparent.
 
+TEMPLATE FILE: TEMPLATE_wolf_base.png
+-------------------------------------
+This is a copy of the pale wolf texture. Use it as a reference for positioning.
+When creating equipment, make everything transparent EXCEPT the equipment parts.
+
 REQUIRED EQUIPMENT TEXTURES:
 ----------------------------
 
@@ -25,23 +30,46 @@ Feet Slot:
 
 TEXTURE TIPS:
 -------------
-1. Use pale.png as a reference for wolf body positioning
-2. Keep equipment semi-transparent or with gaps so fur shows through
-3. Armor should follow the body contours
-4. The space helmet should be a clear dome over the head area
+1. Open TEMPLATE_wolf_base.png in your image editor
+2. Create a new layer on top for your equipment
+3. Draw equipment ONLY on the body parts you want to cover
+4. Delete/hide the wolf layer, keep only your equipment layer
+5. Export as PNG with transparency
 
-UV REFERENCE (same as wolf):
-- Head area: 0,0 to 14,14 (for helmet)
-- Body area: 18,14 to 44,32 (for armor/sweater)
-- Leg areas: various positions (for booties)
+UV MAP REFERENCE (64x32 texture):
+---------------------------------
+The wolf texture is laid out like this (based on actual pale.png):
+
+    0       8      16      24      32      40      48      56      64
+  0 +-------+-------+-------+-------+-------+-------+-------+-------+
+    | HEAD  | HEAD  |  EAR  |  EAR  |       |       |       |       |
+    | (top) | (bot) | (in)  | (out) |       |       |       |       |
+  8 +-------+-------+-------+-------+-------+-------+-------+-------+
+    | FACE  | FACE  | FACE  | FACE  |  BODY |  BODY |  BODY |  BODY |
+    | (top) |(front)| (L/R) | (back)| (top) |(front)| (L/R) | (back)|
+ 16 +-------+-------+-------+-------+-------+-------+-------+-------+
+    |  LEG  |  LEG  |  LEG  |  LEG  | MANE/ |       |       | TAIL  |
+    | (top) |(front)| (L/R) | (back)| NECK  |       |       |       |
+ 24 +-------+-------+-------+-------+-------+-------+-------+-------+
+    |       |       |       |       |       |       |       |       |
+    |              (unused/transparent)                             |
+ 32 +---------------------------------------------------------------+
+
+Key areas for equipment:
+- HELMET: Head/Face area (0-28, 0-16) - covers head and snout
+- BODY ARMOR: Body area (32-64, 8-16) + Mane (32-40, 16-24) - covers torso
+- BOOTIES: Leg areas (0-16, 16-24) - covers all four legs
+
+TIP: The easiest approach is to open TEMPLATE_wolf_base.png in your editor,
+trace over the parts you want to cover with equipment, then delete the wolf layer.
 
 ITEM TEXTURES (for inventory icons):
 ------------------------------------
 Also needed in ../../../textures/item/:
-[ ] wolf_leather_armor.png   (16x16)
-[ ] wolf_gold_armor.png      (16x16)
-[ ] wolf_diamond_armor.png   (16x16)
+[X] wolf_leather_armor.png   (16x16)
+[X] wolf_gold_armor.png      (16x16)
+[X] wolf_diamond_armor.png   (16x16)
 [ ] wolf_sweater.png         (16x16)
 [ ] wolf_space_suit.png      (16x16)
-[ ] wolf_space_helmet.png    (16x16)
+[X] wolf_space_helmet.png    (16x16)
 [ ] wolf_booties.png         (16x16)
