@@ -1,9 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    { "id": "ad_astra:glacio", "required": false },
-    { "id": "ad_astra:glacio_ice_peaks", "required": false },
-    { "id": "ad_astra:glacio_ice_shard_forest", "required": false },
-    { "id": "ad_astra:glacio_snowy_barrens", "required": false }
-  ]
-}

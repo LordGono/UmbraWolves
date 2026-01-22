@@ -24,3 +24,8 @@ CLAUDE.md
 
 # Files from Forge MDK
 forge*changelog.txt
+
+# Texture templates and info files
+**/TEXTURE_INFO.txt
+**/EQUIPMENT_TEXTURES.txt
+**/TEMPLATE_*.png

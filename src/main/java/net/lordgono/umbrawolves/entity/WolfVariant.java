@@ -24,10 +24,9 @@ public enum WolfVariant {
     AETHER("aether", "spawns_aether_wolf", false),
     VOID("void", "spawns_void_wolf", false),
     MARTIAN("martian", "spawns_martian_wolf", false),
-    GLACIAN("glacian", "spawns_glacian_wolf", false),
-    BYG_FOREST("byg_forest", "spawns_byg_forest_wolf", false),
-    BYG_DESERT("byg_desert", "spawns_byg_desert_wolf", false),
-    NETHER("nether", "spawns_nether_wolf", false);
+    DESERT("desert", "spawns_desert_wolf", false),
+    NETHER("nether", "spawns_nether_wolf", false),
+    UMBRA("umbra", "spawns_umbra_wolf", false);
 
     private final String name;
     private final ResourceLocation wildTexture;

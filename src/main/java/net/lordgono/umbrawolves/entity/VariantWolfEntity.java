@@ -170,6 +170,15 @@ public class VariantWolfEntity extends Wolf {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        // Space helmet protects from suffocation/drowning damage types
+        if (hasOxygenSupply()) {
+            String msgId = source.getMsgId();
+            if (msgId.equals("drown") || msgId.equals("inWall") ||
+                msgId.contains("oxygen") || msgId.contains("suffocate")) {
+                return false; // Immune to these damage types with helmet
+            }
+        }
+
         // Reduce damage based on armor protection
         int protection = getTotalProtection();
         if (protection > 0) {
@@ -222,7 +231,7 @@ public class VariantWolfEntity extends Wolf {
             this.setVariant(variant);
 
             // Space wolves (Martian and Glacian) spawn with space helmet
-            if (variant == WolfVariant.MARTIAN || variant == WolfVariant.GLACIAN) {
+            if (variant == WolfVariant.MARTIAN) {
                 this.setEquipment(WolfEquipmentSlot.HEAD,
                     new ItemStack(ModItems.WOLF_SPACE_HELMET.get()));
             }
@@ -272,5 +281,12 @@ public class VariantWolfEntity extends Wolf {
     public boolean fireImmune() {
         // Nether wolves are fire immune
         return this.getWolfVariant() == WolfVariant.NETHER || super.fireImmune();
+    }
+
+    // Wolves with space helmet can breathe underwater and in space
+    @Override
+    public boolean canBreatheUnderwater() {
+        // Space helmet provides oxygen in any environment
+        return hasOxygenSupply() || super.canBreatheUnderwater();
     }
 }
