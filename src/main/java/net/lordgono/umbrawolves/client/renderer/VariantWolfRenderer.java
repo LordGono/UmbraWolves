@@ -1,6 +1,7 @@
 package net.lordgono.umbrawolves.client.renderer;
 
 import net.lordgono.umbrawolves.entity.VariantWolfEntity;
+import net.lordgono.umbrawolves.entity.WolfEasterEgg;
 import net.lordgono.umbrawolves.entity.WolfVariant;
 import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -18,6 +19,22 @@ public class VariantWolfRenderer extends MobRenderer<VariantWolfEntity, WolfMode
 
     @Override
     public ResourceLocation getTextureLocation(VariantWolfEntity wolf) {
+        // Check for easter egg names first
+        if (wolf.hasCustomName() && wolf.getCustomName() != null) {
+            String name = wolf.getCustomName().getString();
+            WolfEasterEgg.EasterEggTextures easterEgg = WolfEasterEgg.getEasterEgg(name);
+            if (easterEgg != null) {
+                if (wolf.isTame()) {
+                    return easterEgg.getTameTexture();
+                } else if (wolf.isAngry()) {
+                    return easterEgg.getAngryTexture();
+                } else {
+                    return easterEgg.getWildTexture();
+                }
+            }
+        }
+
+        // Fall back to normal variant textures
         WolfVariant variant = wolf.getWolfVariant();
 
         if (wolf.isTame()) {
