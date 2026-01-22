@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "minecraft:desert",
     { "id": "byg:atacama_desert", "required": false },
     { "id": "byg:windswept_desert", "required": false },
     { "id": "byg:red_rock_valley", "required": false },

@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -288,5 +289,11 @@ public class VariantWolfEntity extends Wolf {
     public boolean canBreatheUnderwater() {
         // Space helmet provides oxygen in any environment
         return hasOxygenSupply() || super.canBreatheUnderwater();
+    }
+
+    // Override to display as "Wolf" instead of "Variant Wolf" in HWYLA/Jade
+    @Override
+    protected Component getTypeName() {
+        return Component.translatable("entity.minecraft.wolf");
     }
 }
