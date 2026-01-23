@@ -1,6 +1,12 @@
 {
   "replace": false,
   "values": [
-    "minecraft:old_growth_spruce_taiga"
+    "minecraft:old_growth_spruce_taiga",
+    "minecraft:frozen_river",
+    "minecraft:grove",
+    { "id": "byg:snowy_coniferous_forest", "required": false },
+    { "id": "byg:snowy_fir_clearing", "required": false },
+    { "id": "biomesoplenty:snowy_maple_woods", "required": false },
+    { "id": "byg:frosted_coniferous_forest", "required": false }
   ]
 }

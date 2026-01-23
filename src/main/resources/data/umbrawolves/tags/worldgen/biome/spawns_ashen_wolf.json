@@ -8,6 +8,8 @@
     "minecraft:jagged_peaks",
     "minecraft:snowy_beach",
     "minecraft:grove",
-    { "id": "byg:snowy_coniferous_forest", "required": false }
+    { "id": "byg:snowy_coniferous_forest", "required": false },
+    { "id": "byg:snowy_fir_clearing", "required": false },
+    { "id": "byg:snowy_maple_woods", "required": false }
   ]
 }

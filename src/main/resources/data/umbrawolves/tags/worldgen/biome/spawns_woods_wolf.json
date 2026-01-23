@@ -5,6 +5,20 @@
     "minecraft:flower_forest",
     "minecraft:birch_forest",
     "minecraft:old_growth_birch_forest",
-    "minecraft:dark_forest"
+    "minecraft:dark_forest",
+    { "id": "byg:coniferous_forest", "required": false },
+    { "id": "byg:cika_woods", "required": false },
+    { "id": "byg:maple_taiga", "required": false },
+    { "id": "byg:autumnal_valley", "required": false },
+    { "id": "byg:fragment_forest", "required": false },
+    { "id": "byg:temperate_rainforest", "required": false },
+    { "id": "byg:redwood_thicket", "required": false },
+    { "id": "byg:weeping_witch_forest", "required": false },
+    { "id": "byg:forgotten_forest", "required": false },
+    { "id": "byg:dacite_ridges", "required": false },
+    { "id": "biomesoplenty:coniferous_forest", "required": false },
+    { "id": "biomesoplenty:redwood_forest", "required": false },
+    { "id": "biomesoplenty:woodland", "required": false },
+    { "id": "biomesoplenty:seasonal_forest", "required": false }
   ]
 }
