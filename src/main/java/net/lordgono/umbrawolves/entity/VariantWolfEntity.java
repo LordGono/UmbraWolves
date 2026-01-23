@@ -171,11 +171,13 @@ public class VariantWolfEntity extends Wolf {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // Space helmet protects from suffocation/drowning damage types
+        // Space helmet protects from environmental damage types
         if (hasOxygenSupply()) {
             String msgId = source.getMsgId();
             if (msgId.equals("drown") || msgId.equals("inWall") ||
-                msgId.contains("oxygen") || msgId.contains("suffocate")) {
+                msgId.equals("freeze") || msgId.equals("frozen") ||
+                msgId.contains("oxygen") || msgId.contains("suffocate") ||
+                msgId.contains("freeze") || msgId.contains("cold")) {
                 return false; // Immune to these damage types with helmet
             }
         }
@@ -231,8 +233,8 @@ public class VariantWolfEntity extends Wolf {
             WolfVariant variant = getVariantForBiome(biomeHolder);
             this.setVariant(variant);
 
-            // Space wolves (Martian and Glacian) spawn with space helmet
-            if (variant == WolfVariant.MARTIAN) {
+            // Space wolves spawn with space helmet
+            if (variant == WolfVariant.MARTIAN || variant == WolfVariant.UMBRA) {
                 this.setEquipment(WolfEquipmentSlot.HEAD,
                     new ItemStack(ModItems.WOLF_SPACE_HELMET.get()));
             }
@@ -263,16 +265,41 @@ public class VariantWolfEntity extends Wolf {
     @Override
     public Wolf getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         VariantWolfEntity baby = ModEntities.VARIANT_WOLF.get().create(level);
-        if (baby != null && otherParent instanceof VariantWolfEntity otherWolf) {
+        if (baby != null) {
             // Baby inherits variant from random parent
-            if (this.random.nextBoolean()) {
-                baby.setVariant(this.getWolfVariant());
+            if (otherParent instanceof VariantWolfEntity otherWolf) {
+                if (this.random.nextBoolean()) {
+                    baby.setVariant(this.getWolfVariant());
+                } else {
+                    baby.setVariant(otherWolf.getWolfVariant());
+                }
             } else {
-                baby.setVariant(otherWolf.getWolfVariant());
+                // If breeding with vanilla wolf, inherit from this wolf
+                baby.setVariant(this.getWolfVariant());
             }
-        } else if (baby != null) {
-            // If breeding with vanilla wolf, inherit from this wolf
-            baby.setVariant(this.getWolfVariant());
+
+            // Puppies should be tame and inherit owner from a parent
+            if (this.isTame()) {
+                java.util.UUID owner = null;
+
+                // If both parents have owners, randomly pick one
+                if (otherParent instanceof Wolf otherWolf && otherWolf.isTame()) {
+                    if (this.random.nextBoolean() && this.getOwnerUUID() != null) {
+                        owner = this.getOwnerUUID();
+                    } else if (otherWolf.getOwnerUUID() != null) {
+                        owner = otherWolf.getOwnerUUID();
+                    } else if (this.getOwnerUUID() != null) {
+                        owner = this.getOwnerUUID();
+                    }
+                } else {
+                    owner = this.getOwnerUUID();
+                }
+
+                if (owner != null) {
+                    baby.setTame(true);
+                    baby.setOwnerUUID(owner);
+                }
+            }
         }
         return baby;
     }
@@ -289,6 +316,21 @@ public class VariantWolfEntity extends Wolf {
     public boolean canBreatheUnderwater() {
         // Space helmet provides oxygen in any environment
         return hasOxygenSupply() || super.canBreatheUnderwater();
+    }
+
+    // Space helmet protects from freezing
+    @Override
+    public boolean canFreeze() {
+        return !hasOxygenSupply() && super.canFreeze();
+    }
+
+    // Prevent freeze damage tick for wolves with space helmet
+    @Override
+    public boolean isFullyFrozen() {
+        if (hasOxygenSupply()) {
+            return false;
+        }
+        return super.isFullyFrozen();
     }
 
     // Override to display as "Wolf" instead of "Variant Wolf" in HWYLA/Jade

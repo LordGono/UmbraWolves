@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "#umbrawolves:spawns_pale_wolf",
+    "#umbrawolves:spawns_woods_wolf",
+    "#umbrawolves:spawns_ashen_wolf",
+    "#umbrawolves:spawns_black_wolf",
+    "#umbrawolves:spawns_chestnut_wolf",
+    "#umbrawolves:spawns_rusty_wolf",
+    "#umbrawolves:spawns_spotted_wolf",
+    "#umbrawolves:spawns_striped_wolf",
+    "#umbrawolves:spawns_twilight_wolf",
+    "#umbrawolves:spawns_aether_wolf",
+    "#umbrawolves:spawns_void_wolf",
+    "#umbrawolves:spawns_martian_wolf",
+    "#umbrawolves:spawns_desert_wolf",
+    "#umbrawolves:spawns_nether_wolf",
+    "#umbrawolves:spawns_umbra_wolf"
+  ]
+}

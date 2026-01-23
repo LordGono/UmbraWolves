@@ -1,10 +1,10 @@
 package net.lordgono.umbrawolves.entity;
 
 import net.lordgono.umbrawolves.UmbraWolves;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Optional;
 
@@ -47,7 +47,7 @@ public enum WolfVariant {
         this.tameTexture = new ResourceLocation(textureNamespace, "textures/entity/wolf/" + name + "_tame.png");
         this.angryTexture = new ResourceLocation(textureNamespace, "textures/entity/wolf/" + name + "_angry.png");
 
-        this.biomeTag = TagKey.create(ForgeRegistries.Keys.BIOMES,
+        this.biomeTag = TagKey.create(Registry.BIOME_REGISTRY,
             new ResourceLocation(UmbraWolves.MOD_ID, biomeTagName));
     }
 

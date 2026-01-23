@@ -4,12 +4,22 @@ import net.lordgono.umbrawolves.config.WolfConfig;
 import net.lordgono.umbrawolves.entity.VariantWolfEntity;
 import net.lordgono.umbrawolves.entity.WolfVariant;
 import net.lordgono.umbrawolves.registry.ModEntities;
+import net.lordgono.umbrawolves.registry.ModItems;
+import net.lordgono.umbrawolves.entity.WolfEquipmentSlot;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,13 +27,57 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class WolfSpawnHandler {
 
     public static void registerSpawnPlacements() {
-        // Register spawn placement for our variant wolf
+        // Register spawn placement for our variant wolf with custom rules
         SpawnPlacements.register(
             ModEntities.VARIANT_WOLF.get(),
             SpawnPlacements.Type.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            Animal::checkAnimalSpawnRules
+            WolfSpawnHandler::checkVariantWolfSpawnRules
         );
+    }
+
+    /**
+     * Custom spawn rules for variant wolves - more permissive than vanilla animals.
+     * Allows spawning on any solid block, not just grass.
+     */
+    public static boolean checkVariantWolfSpawnRules(EntityType<VariantWolfEntity> entityType,
+                                                      LevelAccessor level,
+                                                      MobSpawnType spawnType,
+                                                      BlockPos pos,
+                                                      RandomSource random) {
+        // Allow spawning if:
+        // 1. Block below is solid
+        // 2. Block at spawn position is air/passable
+        // 3. Light level is sufficient OR it's a modded dimension (moon, nether, etc.)
+        BlockPos belowPos = pos.below();
+
+        if (!level.getBlockState(belowPos).isValidSpawn(level, belowPos, entityType)) {
+            return false;
+        }
+
+        // Check light level - be more permissive for modded dimensions
+        int lightLevel = level.getMaxLocalRawBrightness(pos);
+
+        // In overworld-like conditions, require some light (like vanilla)
+        // In other dimensions, allow darker spawns
+        if (lightLevel < 7) {
+            // Check if this is a modded biome that should allow dark spawns
+            Holder<Biome> biome = level.getBiome(pos);
+            String biomeName = biome.unwrapKey().map(key -> key.location().toString()).orElse("");
+
+            // Allow dark spawns in nether, moon, void dimensions
+            boolean allowDarkSpawn = biomeName.contains("nether") ||
+                                     biomeName.contains("moon") ||
+                                     biomeName.contains("ad_astra") ||
+                                     biomeName.contains("void") ||
+                                     biomeName.contains("deep_dark");
+
+            if (!allowDarkSpawn) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @SubscribeEvent
@@ -35,7 +89,7 @@ public class WolfSpawnHandler {
 
         if (event.getEntity() instanceof Wolf && !(event.getEntity() instanceof VariantWolfEntity)) {
             // Check if this is a vanilla wolf spawn we should replace
-            if (event.getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            if (event.getLevel() instanceof ServerLevel serverLevel) {
                 // Deny the vanilla wolf spawn
                 event.setResult(Event.Result.DENY);
 
@@ -51,6 +105,73 @@ public class WolfSpawnHandler {
                     variantWolf.setVariant(variant);
 
                     serverLevel.addFreshEntity(variantWolf);
+                }
+            }
+        }
+    }
+
+    /**
+     * Periodically attempt to spawn variant wolves in modded dimensions
+     * where normal mob spawning might be disabled or restricted.
+     */
+    @SubscribeEvent
+    public static void onWorldTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (!(event.level instanceof ServerLevel serverLevel)) return;
+
+        // Only run every ~10 seconds (200 ticks) to avoid performance issues
+        if (serverLevel.getGameTime() % 200 != 0) return;
+
+        // Manual spawning runs in all dimensions to supplement biome modifiers
+        // This ensures wolves spawn even if biome modifiers don't work properly
+
+        // Try to spawn wolves near players in this dimension
+        for (ServerPlayer player : serverLevel.players()) {
+            // 5% chance per player per tick cycle
+            if (serverLevel.random.nextFloat() > 0.05f) continue;
+
+            // Find a spawn position near the player
+            BlockPos playerPos = player.blockPosition();
+            int range = 32;
+            int attempts = 10;
+
+            for (int i = 0; i < attempts; i++) {
+                int x = playerPos.getX() + serverLevel.random.nextIntBetweenInclusive(-range, range);
+                int z = playerPos.getZ() + serverLevel.random.nextIntBetweenInclusive(-range, range);
+                int y = serverLevel.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                BlockPos spawnPos = new BlockPos(x, y, z);
+
+                // Check if this biome should spawn variant wolves
+                Holder<Biome> biome = serverLevel.getBiome(spawnPos);
+                WolfVariant variant = VariantWolfEntity.getVariantForBiome(biome);
+
+                // Only spawn if biome matches a non-pale variant (pale is the fallback)
+                if (variant == WolfVariant.PALE && !biome.is(variant.getBiomeTag())) {
+                    continue;
+                }
+
+                // Check spawn rules
+                if (!checkVariantWolfSpawnRules(ModEntities.VARIANT_WOLF.get(), serverLevel,
+                        MobSpawnType.NATURAL, spawnPos, serverLevel.random)) {
+                    continue;
+                }
+
+                // Spawn the wolf
+                VariantWolfEntity wolf = ModEntities.VARIANT_WOLF.get().create(serverLevel);
+                if (wolf != null) {
+                    wolf.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
+                               serverLevel.random.nextFloat() * 360f, 0);
+                    wolf.setVariant(variant);
+
+                    // Space wolves get helmet
+                    if (variant == WolfVariant.MARTIAN || variant == WolfVariant.UMBRA) {
+                        wolf.setEquipment(WolfEquipmentSlot.HEAD, new ItemStack(ModItems.WOLF_SPACE_HELMET.get()));
+                    }
+
+                    wolf.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos),
+                                       MobSpawnType.NATURAL, null, null);
+                    serverLevel.addFreshEntity(wolf);
+                    break; // Only spawn one per player per cycle
                 }
             }
         }
