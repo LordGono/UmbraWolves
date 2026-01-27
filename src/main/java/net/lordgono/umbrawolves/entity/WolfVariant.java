@@ -26,7 +26,8 @@ public enum WolfVariant {
     MARTIAN("martian", "spawns_martian_wolf", false),
     DESERT("desert", "spawns_desert_wolf", false),
     NETHER("nether", "spawns_nether_wolf", false),
-    UMBRA("umbra", "spawns_umbra_wolf", false);
+    UMBRA("umbra", "spawns_umbra_wolf", false),
+    END("end", "spawns_end_wolf", false);
 
     private final String name;
     private final ResourceLocation wildTexture;

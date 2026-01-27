@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:the_end",
+    "minecraft:end_highlands",
+    "minecraft:end_midlands",
+    { "id": "byg:bulbis_gardens", "required": false },
+    { "id": "byg:imparius_grove", "required": false },
+    { "id": "byg:ivis_fields", "required": false },
+    { "id": "byg:nightshade_forest", "required": false }
+  ]
+}
