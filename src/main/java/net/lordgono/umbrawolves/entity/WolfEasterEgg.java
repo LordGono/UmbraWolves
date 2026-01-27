@@ -16,12 +16,15 @@ public class WolfEasterEgg {
 
     static {
         // Register easter egg names (case-insensitive)
-        register("beef");      // Custom texture for "Beef"
-        register("holiday");   // Custom texture for "Holiday"
-        register("bluey");     // Blue heeler from the show!
-        register("bingo");     // Bluey's sister
-        register("ty");        // Custom texture for "Ty"
-        register("zoey");      // Custom texture for "Zoey"
+        register("beef");
+        register("holiday");
+        register("bluey");
+        register("bingo");
+        register("ty");
+        register("zoey");
+        register("dusty");
+        register("Luna");
+        register("jar");
     }
 
     private static void register(String name) {

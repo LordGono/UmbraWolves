@@ -333,6 +333,16 @@ public class VariantWolfEntity extends Wolf {
         return super.isFullyFrozen();
     }
 
+    // Prevent freeze tick accumulation (visual shivering effect) for wolves with space helmet
+    @Override
+    public void setTicksFrozen(int ticks) {
+        if (hasOxygenSupply()) {
+            super.setTicksFrozen(0);
+        } else {
+            super.setTicksFrozen(ticks);
+        }
+    }
+
     // Override to display as "Wolf" instead of "Variant Wolf" in HWYLA/Jade
     @Override
     protected Component getTypeName() {

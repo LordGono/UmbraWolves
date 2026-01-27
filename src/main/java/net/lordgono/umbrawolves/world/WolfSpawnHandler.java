@@ -119,16 +119,17 @@ public class WolfSpawnHandler {
         if (event.phase != TickEvent.Phase.END) return;
         if (!(event.level instanceof ServerLevel serverLevel)) return;
 
-        // Only run every ~10 seconds (200 ticks) to avoid performance issues
-        if (serverLevel.getGameTime() % 200 != 0) return;
+        // Only run every ~30 seconds (600 ticks)
+        if (serverLevel.getGameTime() % 600 != 0) return;
 
-        // Manual spawning runs in all dimensions to supplement biome modifiers
-        // This ensures wolves spawn even if biome modifiers don't work properly
+        // Only run on the moon - biome modifiers handle overworld spawns
+        String dimensionName = serverLevel.dimension().location().toString();
+        if (!dimensionName.contains("moon")) return;
 
         // Try to spawn wolves near players in this dimension
         for (ServerPlayer player : serverLevel.players()) {
-            // 5% chance per player per tick cycle
-            if (serverLevel.random.nextFloat() > 0.05f) continue;
+            // 3% chance per player per tick cycle (reduced for moon)
+            if (serverLevel.random.nextFloat() > 0.03f) continue;
 
             // Find a spawn position near the player
             BlockPos playerPos = player.blockPosition();
