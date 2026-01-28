@@ -25,6 +25,7 @@ public class WolfEasterEgg {
         register("dusty");
         register("Luna");
         register("jar");
+        register("sumo");
     }
 
     private static void register(String name) {

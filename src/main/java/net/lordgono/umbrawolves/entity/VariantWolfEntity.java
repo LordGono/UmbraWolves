@@ -171,6 +171,16 @@ public class VariantWolfEntity extends Wolf {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        // Nether wolves are immune to fire and lava damage
+        if (this.getWolfVariant() == WolfVariant.NETHER) {
+            String msgId = source.getMsgId();
+            if (msgId.equals("inFire") || msgId.equals("onFire") ||
+                msgId.equals("lava") || msgId.equals("hotFloor") ||
+                msgId.contains("fire")) {
+                return false;
+            }
+        }
+
         // Space helmet protects from environmental damage types
         if (hasOxygenSupply()) {
             String msgId = source.getMsgId();
@@ -309,6 +319,16 @@ public class VariantWolfEntity extends Wolf {
     public boolean fireImmune() {
         // Nether wolves are fire immune
         return this.getWolfVariant() == WolfVariant.NETHER || super.fireImmune();
+    }
+
+    // Prevent nether wolves from catching fire visually
+    @Override
+    public void setRemainingFireTicks(int ticks) {
+        if (this.getWolfVariant() == WolfVariant.NETHER) {
+            super.setRemainingFireTicks(0);
+        } else {
+            super.setRemainingFireTicks(ticks);
+        }
     }
 
     // Wolves with space helmet can breathe underwater and in space

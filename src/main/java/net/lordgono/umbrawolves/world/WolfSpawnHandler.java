@@ -46,12 +46,18 @@ public class WolfSpawnHandler {
                                                       BlockPos pos,
                                                       RandomSource random) {
         // Allow spawning if:
-        // 1. Block below is solid
+        // 1. Block below is solid (any solid block - grass, dirt, podzol, snow, stone, etc.)
         // 2. Block at spawn position is air/passable
         // 3. Light level is sufficient OR it's a modded dimension (moon, nether, etc.)
         BlockPos belowPos = pos.below();
 
-        if (!level.getBlockState(belowPos).isValidSpawn(level, belowPos, entityType)) {
+        // Check block below is solid and spawn position is passable
+        if (!level.getBlockState(belowPos).isSolidRender(level, belowPos)) {
+            return false;
+        }
+
+        // Check spawn position is not obstructed
+        if (!level.getBlockState(pos).isAir() && level.getBlockState(pos).getMaterial().isSolid()) {
             return false;
         }
 
@@ -65,13 +71,20 @@ public class WolfSpawnHandler {
             Holder<Biome> biome = level.getBiome(pos);
             String biomeName = biome.unwrapKey().map(key -> key.location().toString()).orElse("");
 
-            // Allow dark spawns in nether, moon, void dimensions
+            // Allow dark spawns in nether, moon, void dimensions, and jungles (dense canopy)
             boolean allowDarkSpawn = biomeName.contains("nether") ||
                                      biomeName.contains("moon") ||
                                      biomeName.contains("ad_astra") ||
                                      biomeName.contains("void") ||
-                                     biomeName.contains("deep_dark");
-
+                                     biomeName.contains("deep_dark") ||
+                                     biomeName.contains("jungle") ||
+                                     biomeName.contains("rainforest") ||
+                                     biomeName.contains("coniferous") ||
+                                     biomeName.contains("end") ||
+                                     biomeName.contains("byg:bulbis_gardens") ||
+                                     biomeName.contains("byg:imparius_grove") ||
+                                     biomeName.contains("byg:ivis_fields") ||
+                                     biomeName.contains("byg:nightshade_forest");
             if (!allowDarkSpawn) {
                 return false;
             }

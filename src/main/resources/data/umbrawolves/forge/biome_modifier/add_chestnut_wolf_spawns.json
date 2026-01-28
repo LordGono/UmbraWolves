@@ -3,8 +3,8 @@
   "biomes": "#umbrawolves:spawns_chestnut_wolf",
   "spawners": {
     "type": "umbrawolves:variant_wolf",
-    "weight": 10,
-    "minCount": 2,
+    "weight": 45,
+    "minCount": 1,
     "maxCount": 4
   }
 }
