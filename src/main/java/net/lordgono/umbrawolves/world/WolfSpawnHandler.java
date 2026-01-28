@@ -2,19 +2,24 @@ package net.lordgono.umbrawolves.world;
 
 import net.lordgono.umbrawolves.config.WolfConfig;
 import net.lordgono.umbrawolves.entity.VariantWolfEntity;
+import net.lordgono.umbrawolves.entity.WolfEquipmentSlot;
 import net.lordgono.umbrawolves.entity.WolfVariant;
 import net.lordgono.umbrawolves.registry.ModEntities;
+import net.lordgono.umbrawolves.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -90,6 +95,18 @@ public class WolfSpawnHandler {
 
     @SubscribeEvent
     public static void onLivingCheckSpawn(LivingSpawnEvent.CheckSpawn event) {
+        // Deny natural biome modifier spawns in End dimension
+        // We use the tick spawner instead for controlled spawn rates
+        if (event.getEntity() instanceof VariantWolfEntity) {
+            if (event.getLevel() instanceof ServerLevel serverLevel) {
+                String dimensionName = serverLevel.dimension().location().toString().toLowerCase();
+                if (dimensionName.contains("the_end")) {
+                    event.setResult(Event.Result.DENY);
+                    return;
+                }
+            }
+        }
+
         // If configured to replace vanilla wolves, convert them to variant wolves
         if (!WolfConfig.REPLACE_VANILLA_WOLVES.get()) {
             return;
@@ -114,6 +131,96 @@ public class WolfSpawnHandler {
 
                     serverLevel.addFreshEntity(variantWolf);
                 }
+            }
+        }
+    }
+
+    /**
+     * Controlled spawning for Ad Astra dimensions (Moon/Mars) and End.
+     * Biome modifiers don't work in these dimensions due to mob spawning restrictions.
+     */
+    @SubscribeEvent
+    public static void onWorldTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (!(event.level instanceof ServerLevel serverLevel)) return;
+
+        String dimensionName = serverLevel.dimension().location().toString();
+        boolean isAdAstra = dimensionName.contains("moon") || dimensionName.contains("mars");
+        boolean isEnd = dimensionName.contains("the_end");
+
+        if (!isAdAstra && !isEnd) return;
+
+        // Different spawn intervals for different dimensions
+        int interval;
+        float spawnChance;
+
+        if (isEnd) {
+            // End: Medium rarity - every 2 minutes with 3% chance
+            interval = 1200; // 1 minutes
+            spawnChance = 0.30f; // 30% chance
+        } else {
+            // Ad Astra: Every minute with 30% chance for packs of 1-3
+            interval = 1200; // 1 minute
+            spawnChance = 0.30f; // 30% chance = ~1 pack per 3-4 minutes per player
+        }
+
+        if (serverLevel.getGameTime() % interval != 0) return;
+
+        // Try to spawn wolves near players in this dimension
+        for (ServerPlayer player : serverLevel.players()) {
+            if (serverLevel.random.nextFloat() > spawnChance) continue;
+
+            // Find a spawn position near the player
+            BlockPos playerPos = player.blockPosition();
+            int range = 48;
+            int attempts = 10;
+
+            for (int i = 0; i < attempts; i++) {
+                int x = playerPos.getX() + serverLevel.random.nextIntBetweenInclusive(-range, range);
+                int z = playerPos.getZ() + serverLevel.random.nextIntBetweenInclusive(-range, range);
+                int y = serverLevel.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                BlockPos spawnPos = new BlockPos(x, y, z);
+
+                // Check if this biome should spawn variant wolves
+                Holder<Biome> biome = serverLevel.getBiome(spawnPos);
+                WolfVariant variant = VariantWolfEntity.getVariantForBiome(biome);
+
+                // Only spawn if biome matches a non-pale variant (pale is the fallback)
+                if (variant == WolfVariant.PALE && !biome.is(variant.getBiomeTag())) {
+                    continue;
+                }
+
+                // Check spawn rules
+                if (!checkVariantWolfSpawnRules(ModEntities.VARIANT_WOLF.get(), serverLevel,
+                        MobSpawnType.NATURAL, spawnPos, serverLevel.random)) {
+                    continue;
+                }
+
+                // Spawn a pack of 1-3 wolves (Ad Astra) or 1 wolf (End)
+                int packSize = isAdAstra ? serverLevel.random.nextIntBetweenInclusive(1, 3) : 1;
+
+                for (int w = 0; w < packSize; w++) {
+                    // Offset position slightly for each wolf in the pack
+                    double offsetX = spawnPos.getX() + 0.5 + (w > 0 ? serverLevel.random.nextDouble() * 3 - 1.5 : 0);
+                    double offsetZ = spawnPos.getZ() + 0.5 + (w > 0 ? serverLevel.random.nextDouble() * 3 - 1.5 : 0);
+
+                    VariantWolfEntity wolf = ModEntities.VARIANT_WOLF.get().create(serverLevel);
+                    if (wolf != null) {
+                        wolf.moveTo(offsetX, spawnPos.getY(), offsetZ,
+                                   serverLevel.random.nextFloat() * 360f, 0);
+                        wolf.setVariant(variant);
+
+                        // Space wolves get helmet
+                        if (variant == WolfVariant.MARTIAN || variant == WolfVariant.UMBRA) {
+                            wolf.setEquipment(WolfEquipmentSlot.HEAD, new ItemStack(ModItems.WOLF_SPACE_HELMET.get()));
+                        }
+
+                        wolf.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos),
+                                           MobSpawnType.NATURAL, null, null);
+                        serverLevel.addFreshEntity(wolf);
+                    }
+                }
+                break; // Only spawn one pack per player per cycle
             }
         }
     }
