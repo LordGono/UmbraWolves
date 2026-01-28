@@ -1,9 +1,9 @@
 {
   "type": "forge:add_spawns",
-  "biomes": "#umbrawolves:spawns_variant_wolves",
+  "biomes": "#umbrawolves:spawns_black_wolf",
   "spawners": {
     "type": "umbrawolves:variant_wolf",
-    "weight": 8,
+    "weight": 10,
     "minCount": 2,
     "maxCount": 4
   }

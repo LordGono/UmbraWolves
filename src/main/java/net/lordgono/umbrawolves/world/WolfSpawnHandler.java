@@ -128,8 +128,8 @@ public class WolfSpawnHandler {
 
         // Try to spawn wolves near players in this dimension
         for (ServerPlayer player : serverLevel.players()) {
-            // 3% chance per player per tick cycle (reduced for moon)
-            if (serverLevel.random.nextFloat() > 0.03f) continue;
+            // 0.1% chance per player per tick cycle (very rare on moon)
+            if (serverLevel.random.nextFloat() > 0.001f) continue;
 
             // Find a spawn position near the player
             BlockPos playerPos = player.blockPosition();
