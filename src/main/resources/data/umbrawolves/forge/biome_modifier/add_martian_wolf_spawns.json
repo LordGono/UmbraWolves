@@ -3,7 +3,7 @@
   "biomes": "#umbrawolves:spawns_martian_wolf",
   "spawners": {
     "type": "umbrawolves:variant_wolf",
-    "weight": 8,
+    "weight": 2,
     "minCount": 2,
     "maxCount": 4
   }
