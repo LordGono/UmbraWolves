@@ -2,6 +2,7 @@ package net.lordgono.umbrawolves.entity;
 
 import net.lordgono.umbrawolves.UmbraWolves;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -16,7 +17,10 @@ public class WolfEasterEgg {
 
     static {
         // Register easter egg names (case-insensitive)
-        register("beef");
+        // Beef gets a green (lime) collar
+        registerWithCollar("beef", DyeColor.LIME);
+
+        // Other easter eggs use default collar colors
         register("holiday");
         register("bluey");
         register("bingo");
@@ -29,11 +33,16 @@ public class WolfEasterEgg {
     }
 
     private static void register(String name) {
+        registerWithCollar(name, null);
+    }
+
+    private static void registerWithCollar(String name, @Nullable DyeColor collarColor) {
         String lowerName = name.toLowerCase();
         EASTER_EGGS.put(lowerName, new EasterEggTextures(
             new ResourceLocation(UmbraWolves.MOD_ID, "textures/entity/wolf/easteregg/" + lowerName + ".png"),
             new ResourceLocation(UmbraWolves.MOD_ID, "textures/entity/wolf/easteregg/" + lowerName + "_tame.png"),
-            new ResourceLocation(UmbraWolves.MOD_ID, "textures/entity/wolf/easteregg/" + lowerName + "_angry.png")
+            new ResourceLocation(UmbraWolves.MOD_ID, "textures/entity/wolf/easteregg/" + lowerName + "_angry.png"),
+            collarColor
         ));
     }
 
@@ -76,11 +85,13 @@ public class WolfEasterEgg {
         private final ResourceLocation wildTexture;
         private final ResourceLocation tameTexture;
         private final ResourceLocation angryTexture;
+        private final DyeColor collarColor;
 
-        public EasterEggTextures(ResourceLocation wild, ResourceLocation tame, ResourceLocation angry) {
+        public EasterEggTextures(ResourceLocation wild, ResourceLocation tame, ResourceLocation angry, @Nullable DyeColor collarColor) {
             this.wildTexture = wild;
             this.tameTexture = tame;
             this.angryTexture = angry;
+            this.collarColor = collarColor;
         }
 
         public ResourceLocation getWildTexture() {
@@ -93,6 +104,15 @@ public class WolfEasterEgg {
 
         public ResourceLocation getAngryTexture() {
             return angryTexture;
+        }
+
+        @Nullable
+        public DyeColor getCollarColor() {
+            return collarColor;
+        }
+
+        public boolean hasCustomCollarColor() {
+            return collarColor != null;
         }
     }
 }

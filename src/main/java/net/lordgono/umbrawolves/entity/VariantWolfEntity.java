@@ -20,6 +20,8 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -167,6 +169,29 @@ public class VariantWolfEntity extends Wolf {
         }
 
         return super.mobInteract(player, hand);
+    }
+
+    @Override
+    public void setTame(boolean tamed) {
+        super.setTame(tamed);
+
+        // Increase max health when tamed, decrease when untamed
+        AttributeInstance healthAttr = this.getAttribute(Attributes.MAX_HEALTH);
+        if (healthAttr != null) {
+            if (tamed) {
+                // Tamed wolves have 40 HP (20 hearts)
+                healthAttr.setBaseValue(40.0D);
+                // Heal to full health when tamed
+                this.setHealth(40.0F);
+            } else {
+                // Wild wolves have 8 HP (4 hearts)
+                healthAttr.setBaseValue(8.0D);
+                // Cap current health if it exceeds new max
+                if (this.getHealth() > 8.0F) {
+                    this.setHealth(8.0F);
+                }
+            }
+        }
     }
 
     @Override

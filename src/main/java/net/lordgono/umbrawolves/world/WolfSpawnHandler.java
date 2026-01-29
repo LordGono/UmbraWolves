@@ -156,11 +156,11 @@ public class WolfSpawnHandler {
 
         if (isEnd) {
             // End: Medium rarity - every 2 minutes with 3% chance
-            interval = 1200; // 1 minutes
+            interval = 600; // 30 secs
             spawnChance = 0.30f; // 30% chance
         } else {
             // Ad Astra: Every minute with 30% chance for packs of 1-3
-            interval = 1200; // 1 minute
+            interval = 600; // 30 secs
             spawnChance = 0.30f; // 30% chance = ~1 pack per 3-4 minutes per player
         }
 
