@@ -29,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.gameevent.GameEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -392,5 +393,27 @@ public class VariantWolfEntity extends Wolf {
     @Override
     protected Component getTypeName() {
         return Component.translatable("entity.minecraft.wolf");
+    }
+
+    // Void wolves don't trigger sculk sensors/shriekers - they move silently through the Otherside
+    @Override
+    public void gameEvent(@Nullable GameEvent event) {
+        if (this.getWolfVariant() == WolfVariant.VOID) {
+            // Don't emit any game events - void wolves are silent to sculk
+            return;
+        }
+        if (event != null) {
+            super.gameEvent(event);
+        }
+    }
+
+    // Void wolves are invisible to hostile mobs (prevents targeting)
+    // But still visible to players in the renderer
+    @Override
+    public boolean isInvisible() {
+        if (this.getWolfVariant() == WolfVariant.VOID) {
+            return true; // Invisible to mob AI, but renderer can still show them
+        }
+        return super.isInvisible();
     }
 }

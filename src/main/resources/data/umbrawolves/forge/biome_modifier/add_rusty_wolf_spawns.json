@@ -3,7 +3,7 @@
   "biomes": "#umbrawolves:spawns_rusty_wolf",
   "spawners": {
     "type": "umbrawolves:variant_wolf",
-    "weight": 20,
+    "weight": 30,
     "minCount": 2,
     "maxCount": 4
   }

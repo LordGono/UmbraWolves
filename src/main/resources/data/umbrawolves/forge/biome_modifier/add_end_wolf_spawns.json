@@ -3,7 +3,7 @@
   "biomes": "#umbrawolves:spawns_end_wolf",
   "spawners": {
     "type": "umbrawolves:variant_wolf",
-    "weight": 15,
+    "weight": 20,
     "minCount": 2,
     "maxCount": 4
   }

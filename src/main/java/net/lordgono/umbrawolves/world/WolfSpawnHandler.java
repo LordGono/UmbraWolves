@@ -18,6 +18,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -52,7 +53,10 @@ public class WolfSpawnHandler {
         BlockPos belowPos = pos.below();
 
         // Check block below is solid and spawn position is passable
-        if (!level.getBlockState(belowPos).isSolidRender(level, belowPos)) {
+        // Very permissive - allows any solid block
+        BlockState belowState = level.getBlockState(belowPos);
+        if (!belowState.isSolidRender(level, belowPos) &&
+            !belowState.getMaterial().isSolid()) {
             return false;
         }
 
@@ -71,7 +75,7 @@ public class WolfSpawnHandler {
             Holder<Biome> biome = level.getBiome(pos);
             String biomeName = biome.unwrapKey().map(key -> key.location().toString()).orElse("");
 
-            // Allow dark spawns in nether, moon, void dimensions, and jungles (dense canopy)
+            // Allow dark spawns in nether, moon, void dimensions, and dense forests (dense canopy)
             boolean allowDarkSpawn = biomeName.contains("nether") ||
                                      biomeName.contains("moon") ||
                                      biomeName.contains("ad_astra") ||
@@ -80,11 +84,27 @@ public class WolfSpawnHandler {
                                      biomeName.contains("jungle") ||
                                      biomeName.contains("rainforest") ||
                                      biomeName.contains("coniferous") ||
+                                     biomeName.contains("maple") ||
+                                     biomeName.contains("autumnal") ||
+                                     biomeName.contains("seasonal") ||
                                      biomeName.contains("end") ||
                                      biomeName.contains("byg:bulbis_gardens") ||
                                      biomeName.contains("byg:imparius_grove") ||
                                      biomeName.contains("byg:ivis_fields") ||
-                                     biomeName.contains("byg:nightshade_forest");
+                                     biomeName.contains("byg:nightshade_forest") ||
+                                     biomeName.contains("otherside") ||
+                                     biomeName.contains("warped") ||
+                                     biomeName.contains("crimson") ||
+                                     biomeName.contains("soul_sand_valley") ||
+                                     biomeName.contains("basalt_deltas") ||
+                                     biomeName.contains("nether") ||
+                                     biomeName.contains("byg:arisian_undergrowth") ||
+                                     biomeName.contains("byg:brimstone_caverns") ||
+                                     biomeName.contains("byg:crimson_gardens") ||
+                                     biomeName.contains("byg:embur_bog") ||
+                                     biomeName.contains("byg:glowstone_gardens") ||
+                                     biomeName.contains("byg:magma_wastes") ||
+                                     biomeName.contains("byg:wailing_garth");
             if (!allowDarkSpawn) {
                 return false;
             }
@@ -95,12 +115,14 @@ public class WolfSpawnHandler {
 
     @SubscribeEvent
     public static void onLivingCheckSpawn(LivingSpawnEvent.CheckSpawn event) {
-        // Deny natural biome modifier spawns in End dimension
+        // Deny natural biome modifier spawns in End, Otherside, and Nether dimensions
         // We use the tick spawner instead for controlled spawn rates
         if (event.getEntity() instanceof VariantWolfEntity) {
             if (event.getLevel() instanceof ServerLevel serverLevel) {
                 String dimensionName = serverLevel.dimension().location().toString().toLowerCase();
-                if (dimensionName.contains("the_end")) {
+                if (dimensionName.contains("the_end") ||
+                    dimensionName.contains("otherside") ||
+                    dimensionName.contains("nether")) {
                     event.setResult(Event.Result.DENY);
                     return;
                 }
@@ -136,7 +158,7 @@ public class WolfSpawnHandler {
     }
 
     /**
-     * Controlled spawning for Ad Astra dimensions (Moon/Mars) and End.
+     * Controlled spawning for Ad Astra dimensions (Moon/Mars), End, Otherside, and Nether.
      * Biome modifiers don't work in these dimensions due to mob spawning restrictions.
      */
     @SubscribeEvent
@@ -147,19 +169,25 @@ public class WolfSpawnHandler {
         String dimensionName = serverLevel.dimension().location().toString();
         boolean isAdAstra = dimensionName.contains("moon") || dimensionName.contains("mars");
         boolean isEnd = dimensionName.contains("the_end");
+        boolean isOtherside = dimensionName.contains("otherside");
+        boolean isNether = dimensionName.contains("nether");
 
-        if (!isAdAstra && !isEnd) return;
+        if (!isAdAstra && !isEnd && !isOtherside && !isNether) return;
 
         // Different spawn intervals for different dimensions
         int interval;
         float spawnChance;
 
-        if (isEnd) {
-            // End: Medium rarity - every 2 minutes with 3% chance
+        if (isEnd || isOtherside) {
+            // End/Otherside: Medium rarity - every 30 seconds with 30% chance
             interval = 600; // 30 secs
-            spawnChance = 0.30f; // 30% chance
+            spawnChance = 0.55f; // 55% chance
+        } else if (isNether) {
+            // Nether: Every 30 seconds with 60% chance
+            interval = 600; // 30 secs
+            spawnChance = 0.60f; // 60% chance
         } else {
-            // Ad Astra: Every minute with 30% chance for packs of 1-3
+            // Ad Astra: Every 30 seconds with 30% chance for packs of 1-3
             interval = 600; // 30 secs
             spawnChance = 0.30f; // 30% chance = ~1 pack per 3-4 minutes per player
         }
@@ -178,7 +206,19 @@ public class WolfSpawnHandler {
             for (int i = 0; i < attempts; i++) {
                 int x = playerPos.getX() + serverLevel.random.nextIntBetweenInclusive(-range, range);
                 int z = playerPos.getZ() + serverLevel.random.nextIntBetweenInclusive(-range, range);
-                int y = serverLevel.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+
+                // For enclosed dimensions (Nether/End/Otherside), spawn near player's Y level
+                // For open dimensions (Ad Astra), use heightmap
+                int y;
+                if (isNether || isEnd || isOtherside) {
+                    // Spawn at player's Y level with slight random offset (-20 to +20 blocks)
+                    y = playerPos.getY() + serverLevel.random.nextIntBetweenInclusive(-20, 20);
+                    // Clamp to valid dimension range
+                    y = Math.max(serverLevel.getMinBuildHeight() + 1, Math.min(y, serverLevel.getMaxBuildHeight() - 2));
+                } else {
+                    // Ad Astra dimensions - use heightmap (moon/mars have surface terrain)
+                    y = serverLevel.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                }
                 BlockPos spawnPos = new BlockPos(x, y, z);
 
                 // Check if this biome should spawn variant wolves
@@ -196,7 +236,7 @@ public class WolfSpawnHandler {
                     continue;
                 }
 
-                // Spawn a pack of 1-3 wolves (Ad Astra) or 1 wolf (End)
+                // Spawn a pack of 1-3 wolves (Ad Astra) or 1 wolf (End/Otherside/Nether)
                 int packSize = isAdAstra ? serverLevel.random.nextIntBetweenInclusive(1, 3) : 1;
 
                 for (int w = 0; w < packSize; w++) {
