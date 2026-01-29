@@ -1,10 +1,9 @@
 {
   "replace": false,
   "values": [
-    "minecraft:forest",
-    "minecraft:flower_forest",
-    "minecraft:birch_forest",
-    "minecraft:old_growth_birch_forest",
-    "minecraft:dark_forest"
+    { "id": "ad_astra:moon_plains", "required": false },
+    { "id": "ad_astra:moon_highlands", "required": false },
+    { "id": "ad_astra:moon_mountains", "required": false },
+    { "id": "ad_astra:lunar_wastelands", "required": false }
   ]
 }

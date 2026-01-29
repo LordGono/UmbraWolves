@@ -15,10 +15,9 @@
   "entity.umbrawolves.wolf.aether": "Aether Hound",
   "entity.umbrawolves.wolf.void": "Void Wolf",
   "entity.umbrawolves.wolf.martian": "Martian Wolf",
-  "entity.umbrawolves.wolf.glacian": "Glacian Wolf",
-  "entity.umbrawolves.wolf.byg_forest": "Forest Wolf",
-  "entity.umbrawolves.wolf.byg_desert": "Desert Wolf",
+  "entity.umbrawolves.wolf.desert": "Desert Wolf",
   "entity.umbrawolves.wolf.nether": "Nether Hound",
+  "entity.umbrawolves.wolf.umbra": "Umbra Wolf",
 
   "item.umbrawolves.wolf_leather_armor": "Wolf Leather Armor",
   "item.umbrawolves.wolf_gold_armor": "Wolf Gold Armor",

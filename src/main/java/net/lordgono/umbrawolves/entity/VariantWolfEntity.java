@@ -20,12 +20,16 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.gameevent.GameEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -169,12 +173,47 @@ public class VariantWolfEntity extends Wolf {
     }
 
     @Override
+    public void setTame(boolean tamed) {
+        super.setTame(tamed);
+
+        // Increase max health when tamed, decrease when untamed
+        AttributeInstance healthAttr = this.getAttribute(Attributes.MAX_HEALTH);
+        if (healthAttr != null) {
+            if (tamed) {
+                // Tamed wolves have 40 HP (20 hearts)
+                healthAttr.setBaseValue(40.0D);
+                // Heal to full health when tamed
+                this.setHealth(40.0F);
+            } else {
+                // Wild wolves have 8 HP (4 hearts)
+                healthAttr.setBaseValue(8.0D);
+                // Cap current health if it exceeds new max
+                if (this.getHealth() > 8.0F) {
+                    this.setHealth(8.0F);
+                }
+            }
+        }
+    }
+
+    @Override
     public boolean hurt(DamageSource source, float amount) {
-        // Space helmet protects from suffocation/drowning damage types
+        // Nether wolves are immune to fire and lava damage
+        if (this.getWolfVariant() == WolfVariant.NETHER) {
+            String msgId = source.getMsgId();
+            if (msgId.equals("inFire") || msgId.equals("onFire") ||
+                msgId.equals("lava") || msgId.equals("hotFloor") ||
+                msgId.contains("fire")) {
+                return false;
+            }
+        }
+
+        // Space helmet protects from environmental damage types
         if (hasOxygenSupply()) {
             String msgId = source.getMsgId();
             if (msgId.equals("drown") || msgId.equals("inWall") ||
-                msgId.contains("oxygen") || msgId.contains("suffocate")) {
+                msgId.equals("freeze") || msgId.equals("frozen") ||
+                msgId.contains("oxygen") || msgId.contains("suffocate") ||
+                msgId.contains("freeze") || msgId.contains("cold")) {
                 return false; // Immune to these damage types with helmet
             }
         }
@@ -230,8 +269,8 @@ public class VariantWolfEntity extends Wolf {
             WolfVariant variant = getVariantForBiome(biomeHolder);
             this.setVariant(variant);
 
-            // Space wolves (Martian and Glacian) spawn with space helmet
-            if (variant == WolfVariant.MARTIAN) {
+            // Space wolves spawn with space helmet
+            if (variant == WolfVariant.MARTIAN || variant == WolfVariant.UMBRA) {
                 this.setEquipment(WolfEquipmentSlot.HEAD,
                     new ItemStack(ModItems.WOLF_SPACE_HELMET.get()));
             }
@@ -262,16 +301,41 @@ public class VariantWolfEntity extends Wolf {
     @Override
     public Wolf getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         VariantWolfEntity baby = ModEntities.VARIANT_WOLF.get().create(level);
-        if (baby != null && otherParent instanceof VariantWolfEntity otherWolf) {
+        if (baby != null) {
             // Baby inherits variant from random parent
-            if (this.random.nextBoolean()) {
-                baby.setVariant(this.getWolfVariant());
+            if (otherParent instanceof VariantWolfEntity otherWolf) {
+                if (this.random.nextBoolean()) {
+                    baby.setVariant(this.getWolfVariant());
+                } else {
+                    baby.setVariant(otherWolf.getWolfVariant());
+                }
             } else {
-                baby.setVariant(otherWolf.getWolfVariant());
+                // If breeding with vanilla wolf, inherit from this wolf
+                baby.setVariant(this.getWolfVariant());
             }
-        } else if (baby != null) {
-            // If breeding with vanilla wolf, inherit from this wolf
-            baby.setVariant(this.getWolfVariant());
+
+            // Puppies should be tame and inherit owner from a parent
+            if (this.isTame()) {
+                java.util.UUID owner = null;
+
+                // If both parents have owners, randomly pick one
+                if (otherParent instanceof Wolf otherWolf && otherWolf.isTame()) {
+                    if (this.random.nextBoolean() && this.getOwnerUUID() != null) {
+                        owner = this.getOwnerUUID();
+                    } else if (otherWolf.getOwnerUUID() != null) {
+                        owner = otherWolf.getOwnerUUID();
+                    } else if (this.getOwnerUUID() != null) {
+                        owner = this.getOwnerUUID();
+                    }
+                } else {
+                    owner = this.getOwnerUUID();
+                }
+
+                if (owner != null) {
+                    baby.setTame(true);
+                    baby.setOwnerUUID(owner);
+                }
+            }
         }
         return baby;
     }
@@ -283,10 +347,73 @@ public class VariantWolfEntity extends Wolf {
         return this.getWolfVariant() == WolfVariant.NETHER || super.fireImmune();
     }
 
+    // Prevent nether wolves from catching fire visually
+    @Override
+    public void setRemainingFireTicks(int ticks) {
+        if (this.getWolfVariant() == WolfVariant.NETHER) {
+            super.setRemainingFireTicks(0);
+        } else {
+            super.setRemainingFireTicks(ticks);
+        }
+    }
+
     // Wolves with space helmet can breathe underwater and in space
     @Override
     public boolean canBreatheUnderwater() {
         // Space helmet provides oxygen in any environment
         return hasOxygenSupply() || super.canBreatheUnderwater();
+    }
+
+    // Space helmet protects from freezing
+    @Override
+    public boolean canFreeze() {
+        return !hasOxygenSupply() && super.canFreeze();
+    }
+
+    // Prevent freeze damage tick for wolves with space helmet
+    @Override
+    public boolean isFullyFrozen() {
+        if (hasOxygenSupply()) {
+            return false;
+        }
+        return super.isFullyFrozen();
+    }
+
+    // Prevent freeze tick accumulation (visual shivering effect) for wolves with space helmet
+    @Override
+    public void setTicksFrozen(int ticks) {
+        if (hasOxygenSupply()) {
+            super.setTicksFrozen(0);
+        } else {
+            super.setTicksFrozen(ticks);
+        }
+    }
+
+    // Override to display as "Wolf" instead of "Variant Wolf" in HWYLA/Jade
+    @Override
+    protected Component getTypeName() {
+        return Component.translatable("entity.minecraft.wolf");
+    }
+
+    // Void wolves don't trigger sculk sensors/shriekers - they move silently through the Otherside
+    @Override
+    public void gameEvent(@Nullable GameEvent event) {
+        if (this.getWolfVariant() == WolfVariant.VOID) {
+            // Don't emit any game events - void wolves are silent to sculk
+            return;
+        }
+        if (event != null) {
+            super.gameEvent(event);
+        }
+    }
+
+    // Void wolves are invisible to hostile mobs (prevents targeting)
+    // But still visible to players in the renderer
+    @Override
+    public boolean isInvisible() {
+        if (this.getWolfVariant() == WolfVariant.VOID) {
+            return true; // Invisible to mob AI, but renderer can still show them
+        }
+        return super.isInvisible();
     }
 }

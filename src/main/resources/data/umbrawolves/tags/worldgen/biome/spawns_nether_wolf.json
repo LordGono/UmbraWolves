@@ -5,6 +5,14 @@
     "minecraft:crimson_forest",
     "minecraft:warped_forest",
     "minecraft:soul_sand_valley",
-    "minecraft:basalt_deltas"
+    "minecraft:basalt_deltas",
+    { "id": "byg:warped_desert", "required": false },
+    { "id": "byg:arisian_undergrowth", "required": false },
+    { "id": "byg:brimstone_caverns", "required": false },
+    { "id": "byg:crimson_gardens", "required": false },
+    { "id": "byg:embur_bog", "required": false },
+    { "id": "byg:glowstone_gardens", "required": false },
+    { "id": "byg:magma_wastes", "required": false },
+    { "id": "byg:wailing_garth", "required": false }
   ]
 }

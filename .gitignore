@@ -21,6 +21,7 @@ build
 eclipse
 run
 CLAUDE.md
+nul
 
 # Files from Forge MDK
 forge*changelog.txt
@@ -29,3 +30,4 @@ forge*changelog.txt
 **/TEXTURE_INFO.txt
 **/EQUIPMENT_TEXTURES.txt
 **/TEMPLATE_*.png
+**/HOW_TO_ADD_WOLVES.txt
